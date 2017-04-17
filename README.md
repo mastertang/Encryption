@@ -3,12 +3,7 @@
 #### 异常：
 * 异常文件 : EncryptException.php 类 : EncryptException
 
-* 支持的解压缩类型
-```
-1.Zip
-```
-
-* 配置文件
+#### 配置文件
 ```
 1.Des配置文件 DesConfig.php 内容为:
     [
