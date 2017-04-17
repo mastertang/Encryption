@@ -12,13 +12,14 @@ class Encryption
         if (empty($encryptName))
             $encryptName = 'Md5';
         $encryptName = "{$encryptName}Encrypt";
+        $nameSpace = "Encryption\\Mode\\" . $encryptName;
         $encryptPath = __DIR__ . '/Mode/' . "{$encryptName}.php";
         if (!file_exists($encryptPath))
             throw new EncryptException('加密方式文件不存在');
         require $encryptPath;
-        if (!class_exists($encryptName))
+        if (!class_exists($nameSpace))
             throw new EncryptException('加密类不存在');
-        $handler = new Encryption(new $encryptName($encryptParams));
+        $handler = new Encryption(new $nameSpace($encryptParams));
         return $handler;
     }
 
@@ -27,12 +28,12 @@ class Encryption
         self::$encrypter = $encrypter;
     }
 
-    public function encrypt($cleanStr, $encryptParams)
+    public function encrypt($cleanStr, $encryptParams = [])
     {
         return self::$encrypter->makeEncrypt($cleanStr, $encryptParams);
     }
 
-    public function decrypt($encryptedStr, $encryptParams)
+    public function decrypt($encryptedStr, $encryptParams = [])
     {
         return self::$encrypter->makeDecrypt($encryptedStr, $encryptParams);
     }

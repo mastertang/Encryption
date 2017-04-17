@@ -41,7 +41,7 @@ class Md5Encrypt implements EncryptInterface
     {
         if (!isset($params['salt']))
             $params['salt'] = '';
-        if (!isset($config['salt_position']))
+        if (!isset($params['salt_position']))
             $params['salt_position'] = self::$defaultConfig['salt_position'];
         if ($params['salt_position'] != 'tail' &&
             $params['salt_position'] != 'head' &&
@@ -50,7 +50,7 @@ class Md5Encrypt implements EncryptInterface
             $params['salt_position'] = self::$defaultConfig['salt_position'];
     }
 
-    public function makeEncrypt($cleanStr, $encryptParams)
+    public function makeEncrypt($cleanStr, $encryptParams = [])
     {
         if (is_array($encryptParams))
             $encryptParams = array_merge($this->config, $encryptParams);
@@ -59,9 +59,11 @@ class Md5Encrypt implements EncryptInterface
         if ($encryptParams['salt_position'] == 'tail')
             $encodedString = md5($cleanStr . $encryptParams['salt']);
         if ($encryptParams['salt_position'] == 'head')
-            $encodedString = md5($encryptParams['salt'], $cleanStr);
-        if ($encryptParams['salt_position'] instanceof \Closure)
-            $encodedString = $encryptParams['salt_position']($encryptParams['salt'], $cleanStr);
+            $encodedString = md5($encryptParams['salt'] . $cleanStr);
+        if ($encryptParams['salt_position'] instanceof \Closure) {
+            $func = $encryptParams['salt_position'];
+            $encodedString = $func($encryptParams['salt'], $cleanStr);
+        }
         return $encodedString;
     }
 

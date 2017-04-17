@@ -27,6 +27,7 @@ class DesEncrypt implements EncryptInterface
         elseif (is_array($config))
             $configArray = $config;
         $configArray = array_merge($this->defaultConfig, $configArray);
+        if (!isset($configArray['encryptKey'])) $configArray['encryptKey'] = 'test';
         self::checkParams('test', $configArray);
         $this->config = $configArray;
     }
@@ -37,19 +38,19 @@ class DesEncrypt implements EncryptInterface
             $encryptParams = array_merge($this->config, $encryptParams);
         self::checkParams($encryptedStr, $encryptParams);
         $encryptedStr = trim(chop(base64_decode($encryptedStr)));
-        $encryptKey = substr(md5($encryptParams['encryptKey']), 0, 24);
         $encryptTd = mcrypt_module_open(
             $encryptParams['algorithm'],
             $encryptParams['algorithm_dir'],
             $encryptParams['mode'],
             $encryptParams['mode_dir']
         );
-        $encryptIv = mcrypt_create_iv(mcrypt_enc_get_iv_size($encryptTd), $encryptParams['iv_source']);
-        mcrypt_generic_init($encryptTd, $encryptKey, $encryptIv);
-        $encryptedData = mcrypt_generic($encryptTd, $encryptedStr);
+        $encryptKey = substr(md5($encryptParams['encryptKey']), 0, $encryptParams['keySize']);
+        mcrypt_generic_init($encryptTd, $encryptKey, $encryptParams['iv']);
+        $encryptedData = mdecrypt_generic($encryptTd, $encryptedStr);
+        $encryptedData = trim($encryptedData);
         mcrypt_generic_deinit($encryptTd);
         mcrypt_module_close($encryptTd);
-        return trim(chop($encryptedData));
+        return $encryptedData;
     }
 
     public function makeEncrypt($cleanStr, $encryptParams)
@@ -57,19 +58,25 @@ class DesEncrypt implements EncryptInterface
         if (is_array($encryptParams))
             $encryptParams = array_merge($this->config, $encryptParams);
         self::checkParams($cleanStr, $encryptParams);
-        $encryptKey = substr(md5($encryptParams['encryptKey']), 0, 24);
         $encryptTd = mcrypt_module_open(
             $encryptParams['algorithm'],
             $encryptParams['algorithm_dir'],
             $encryptParams['mode'],
             $encryptParams['mode_dir']
         );
-        $encryptIv = mcrypt_create_iv(mcrypt_enc_get_iv_size($encryptTd), $encryptParams['iv_source']);
+        $ivSize = mcrypt_enc_get_iv_size($encryptTd);
+        $encryptIv = mcrypt_create_iv($ivSize, $encryptParams['iv_source']);
+        $maxKeyLength = mcrypt_enc_get_key_size($encryptTd);
+        $encryptKey = substr(md5($encryptParams['encryptKey']), 0, $maxKeyLength);
         mcrypt_generic_init($encryptTd, $encryptKey, $encryptIv);
         $encryptedData = mcrypt_generic($encryptTd, $cleanStr);
         mcrypt_generic_deinit($encryptTd);
         mcrypt_module_close($encryptTd);
-        return trim(chop(base64_encode($encryptedData)));
+        return [
+            'code' => trim(chop(base64_encode($encryptedData))),
+            'iv' => $encryptIv,
+            'keySize' => $maxKeyLength
+        ];
     }
 
     public function changeConfig($params = NULL)
