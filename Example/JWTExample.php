@@ -19,7 +19,7 @@ $key = "abcdefghijklmn";
 $iv = null;
 $length = 0;
 $jwt = new \Encryption\JWT();
-$encrypted = $jwt->encrypt(
+$encrypted = $jwt->encrypt(//加密
     ["alg" => "des"],
     ['a' => "test", 't' => 'test'],
     "hahaha",
@@ -40,7 +40,7 @@ $encrypted = $jwt->encrypt(
     }
 );
 //var_dump($decrypted);
-$decrypted = $jwt->decrypt(
+$decrypted = $jwt->decrypt(//解码
     $encrypted,
     "hahaha",
     function ($header, $payLoad, $signature) use ($key, $iv, $length) {
@@ -58,8 +58,8 @@ $decrypted = $jwt->decrypt(
         var_dump($decoded);
         return $decoded;
     });
-var_dump($jwt->integrityBreak());
-var_dump($jwt->getDecodedHeader());
-var_dump($jwt->getDecodedPlayLoad());
-var_dump($jwt->getDecodedSignature());
-var_dump($jwt->getOriginSignature());
+var_dump($jwt->integrityBreak());     //根据签名判断是否数据完整
+var_dump($jwt->getDecodedHeader());   //获取解码后的头部信息
+var_dump($jwt->getDecodedPlayLoad()); //获取解码后的数据信息
+var_dump($jwt->getDecodedSignature());//获取解码后的签名信息
+var_dump($jwt->getOriginSignature()); //获取正确的签名信息
