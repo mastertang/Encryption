@@ -3,16 +3,6 @@ include "../JWT.php";
 include "../Des.php";
 include "../Md5.php";
 include "../Rsa.php";
-include "../Exception/DesKeyLengthBiggerThanZeroException.php";
-include "../Exception/DesNotSupportThisAlgorithmException.php";
-include "../Exception/DesNotSupportThisModeException.php";
-include "../Exception/DesNotSupportThisIvSourceException.php";
-include "../Exception/DesKeyCanNotNullException.php";
-include "../Exception/JWTDecryptErrorException.php";
-include "../Exception/JWTFailedException.php";
-include "../Exception/JWTParamsErrorException.php";
-include "../Exception/JWTSignatureErrorException.php";
-include "../Exception/JWTStringErrorException.php";
 
 $testString = "this is my test string";
 $key = "abcdefghijklmn";
@@ -25,7 +15,7 @@ $encrypted = $jwt->encrypt(//加密
     "hahaha",
     function ($playload) use ($key, &$iv, &$length) {
         $string = json_encode($playload);
-        $encoded = \Encryption\Des::encrypt(
+        $encoded = \Encryption\Des::create()->encrypt(
             $string,
             MCRYPT_DEV_RANDOM,
             $key,
@@ -45,7 +35,7 @@ $decrypted = $jwt->decrypt(//解码
     "hahaha",
     function ($header, $payLoad, $signature) use ($key, $iv, $length) {
         var_dump($key);
-        $decoded = \Encryption\Des::decrypt(
+        $decoded = \Encryption\Des::create()->decrypt(
             $payLoad,
             $iv,
             $key,

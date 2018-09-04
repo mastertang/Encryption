@@ -1,15 +1,10 @@
 <?php
-namespace Encryption;
 
-use Encryption\Exception\DesKeyCanNotNullException;
-use Encryption\Exception\DesKeyLengthBiggerThanZeroException;
-use Encryption\Exception\DesNotSupportThisAlgorithmException;
-use Encryption\Exception\DesNotSupportThisIvSourceException;
-use Encryption\Exception\DesNotSupportThisModeException;
-use Encryption\Exception\McryptNotLoadException;
+namespace Encryption;
 
 class Des
 {
+    public $errMessage = '';
 
     /**
      * 加密
@@ -23,52 +18,52 @@ class Des
      * @param $iv //变量，引用保存当前加密生成的iv向量值，在解密时会使用到
      * @param $maxLength //key值得最大长度,引用保存当前加密计算的key值最大长度,在解密时会使用到
      * @return string
-     * @throws DesNotSupportThisAlgorithmException
-     * @throws DesNotSupportThisIvSourceException
-     * @throws DesNotSupportThisModeException
-     * @throws McryptNotLoadException
-     * @throws DesKeyCanNotNullException
      */
-    public static function encrypt(
+    public function encrypt(
         $source,
-        $ivSource,
         $key,
-        $algorithm,
-        $algorithmDir,
-        $mode,
-        $modeDir,
         &$iv,
-        &$maxLength
+        &$maxLength,
+        $ivSource = MCRYPT_DEV_RANDOM,
+        $algorithm = MCRYPT_DES,
+        $algorithmDir = '',
+        $mode = MCRYPT_MODE_CBC,
+        $modeDir = ''
     )
     {
         if (empty($source)) {
-            return "";
+            return '';
         }
         if (!extension_loaded('mcrypt')) {
-            throw new McryptNotLoadException();
+            $this->errMessage = 'mcrypt 模块未加载';
+            return false;
         }
         if (!self::supportMode($mode)) {
-            throw new DesNotSupportThisModeException();
+            $this->errMessage = "不支持mode: {$mode}";
+            return false;
         }
         if (!self::supportIvSource($ivSource)) {
-            throw new DesNotSupportThisIvSourceException();
+            $this->errMessage = "不支持ivSource: {$ivSource}";
+            return false;
         }
         if (!self::supportAlgorithm($algorithm)) {
-            throw new DesNotSupportThisAlgorithmException();
+            $this->errMessage = "不支持algorithm: {$algorithm}";
+            return false;
         }
-        if(empty($key)){
-            throw new DesKeyCanNotNullException();
+        if (empty($key)) {
+            $this->errMessage = "加密key为空";
+            return false;
         }
-        $encryptTd = mcrypt_module_open($algorithm, $algorithmDir, $mode, $modeDir);
-        $ivSize = mcrypt_enc_get_iv_size($encryptTd);
-        $encryptIv = mcrypt_create_iv($ivSize, $ivSource);
+        $encryptTd    = mcrypt_module_open($algorithm, $algorithmDir, $mode, $modeDir);
+        $ivSize       = mcrypt_enc_get_iv_size($encryptTd);
+        $encryptIv    = mcrypt_create_iv($ivSize, $ivSource);
         $maxKeyLength = mcrypt_enc_get_key_size($encryptTd);
-        $encryptKey = substr(md5($key), 0, $maxKeyLength);
+        $encryptKey   = substr(md5($key), 0, $maxKeyLength);
         mcrypt_generic_init($encryptTd, $encryptKey, $encryptIv);
         $encryptedData = mcrypt_generic($encryptTd, $source);
         mcrypt_generic_deinit($encryptTd);
         mcrypt_module_close($encryptTd);
-        $iv = $encryptIv;
+        $iv        = $encryptIv;
         $maxLength = $maxKeyLength;
         return trim(chop($encryptedData));
     }
@@ -84,41 +79,40 @@ class Des
      * @param $mode //模式，可查看php支持的des模式
      * @param $modeDir //模式文件的文件夹地址
      * @return string
-     * @throws DesKeyLengthBiggerThanZeroException
-     * @throws DesNotSupportThisAlgorithmException
-     * @throws DesNotSupportThisIvSourceException
-     * @throws DesNotSupportThisModeException
-     * @throws McryptNotLoadException
-     * @throws DesKeyCanNotNullException
      */
-    public static function decrypt(
+    public function decrypt(
         $encrypted,
         $ivSource,
         $key,
         $maxKeyLength,
-        $algorithm,
-        $algorithmDir,
-        $mode,
-        $modeDir
+        $algorithm = MCRYPT_DES,
+        $algorithmDir = '',
+        $mode = MCRYPT_MODE_CBC,
+        $modeDir = ''
     )
     {
         if (!extension_loaded('mcrypt')) {
-            throw new McryptNotLoadException();
+            $this->errMessage = 'mcrypt 模块未加载';
+            return false;
         }
         if (!self::supportMode($mode)) {
-            throw new DesNotSupportThisModeException();
+            $this->errMessage = "不支持mode: {$mode}";
+            return false;
         }
         if (!self::supportAlgorithm($algorithm)) {
-            throw new DesNotSupportThisAlgorithmException();
+            $this->errMessage = "不支持algorithm: {$algorithm}";
+            return false;
         }
-        if(empty($key)){
-            throw new DesKeyCanNotNullException();
+        if (empty($key)) {
+            $this->errMessage = "加密key为空";
+            return false;
         }
         if ($maxKeyLength <= 0) {
-            throw new DesKeyLengthBiggerThanZeroException();
+            $this->errMessage = "maxKeyLength不能为空";
+            return false;
         }
-        $encrypted = trim(chop($encrypted));
-        $encryptTd = mcrypt_module_open($algorithm, $algorithmDir, $mode, $modeDir);
+        $encrypted  = trim(chop($encrypted));
+        $encryptTd  = mcrypt_module_open($algorithm, $algorithmDir, $mode, $modeDir);
         $encryptKey = substr(md5($key), 0, $maxKeyLength);
         mcrypt_generic_init($encryptTd, $encryptKey, $ivSource);
         $encryptedData = mdecrypt_generic($encryptTd, $encrypted);

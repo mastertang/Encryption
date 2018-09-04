@@ -10,13 +10,10 @@
  */
 
 include "../Rsa.php";
-include "../Exception/RsaKeyEmptyException.php";
-include "../Exception/RsaKeyErrorException.php";
-include "../Exception/OpensslNotLoadException.php";
 
 $testString = "this is my test string";
-$encrypted = null;
-$encrypted = \Encryption\Rsa::encrypt($testString, __DIR__ . "/rsa_private_key_256.pem");
+$encrypted  = null;
+$encrypted  = \Encryption\Rsa::create()->encrypt($testString, __DIR__ . "/rsa_private_key_256.pem");
 var_dump($encrypted);
-$decrypted = \Encryption\Rsa::decrypt($encrypted,__DIR__."/rsa_public_key_256.pem",\Encryption\Rsa::KEY_PUBLIC);
+$decrypted = \Encryption\Rsa::create()->decrypt($encrypted, __DIR__ . "/rsa_public_key_256.pem", \Encryption\Rsa::KEY_PUBLIC);
 var_dump($decrypted);

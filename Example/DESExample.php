@@ -1,16 +1,11 @@
 <?php
 include "../Des.php";
-include "../Exception/DesKeyLengthBiggerThanZeroException.php";
-include "../Exception/DesNotSupportThisAlgorithmException.php";
-include "../Exception/DesNotSupportThisModeException.php";
-include "../Exception/DesNotSupportThisIvSourceException.php";
-include "../Exception/DesKeyCanNotNullException.php";
 
 $testString = "this is my test string";
 $key = "abcdefghijklmn";
 $iv = null;
 $length = 0;
-$encrypted = \Encryption\Des::encrypt(
+$encrypted = \Encryption\Des::create()->encrypt(
     $testString,
     MCRYPT_DEV_RANDOM,
     $key,
@@ -22,7 +17,7 @@ $encrypted = \Encryption\Des::encrypt(
     $length
 );
 //var_dump($encrypted);
-$decrypted = \Encryption\Des::decrypt(
+$decrypted = \Encryption\Des::create()->decrypt(
     $encrypted,
     $iv,
     $key,

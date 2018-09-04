@@ -1,12 +1,10 @@
 <?php
-namespace Encryption;
 
-use Encryption\Exception\JWTFailedException;
-use Encryption\Exception\JWTParamsErrorException;
-use Encryption\Exception\JWTStringErrorException;
+namespace Encryption;
 
 class JWT
 {
+    public $errMessage = '';
     /**
      * 解密后的数据
      */
@@ -42,11 +40,11 @@ class JWT
      */
     public function initial()
     {
-        $this->signatureError = false;
-        $this->decodedHeader = null;
-        $this->decodedPlayLoad = null;
+        $this->signatureError   = false;
+        $this->decodedHeader    = null;
+        $this->decodedPlayLoad  = null;
         $this->decodedSignature = null;
-        $this->originSignature = null;
+        $this->originSignature  = null;
     }
 
     /**
@@ -95,7 +93,8 @@ class JWT
     public function encrypt($header, $payload, $hashSecret, $handler = null)
     {
         if (is_null($payload) || empty($header) || !is_array($header)) {
-            throw new JWTParamsErrorException();
+            $this->errMessage = '信息不能为空';
+            return false;
         }
         $header = base64_encode(json_encode($header));
         if (is_callable($handler)) {
@@ -105,10 +104,10 @@ class JWT
         }
         $signature = hash('sha256', $header . "." . $payLoad . $hashSecret);
         if (!$signature || !$payLoad || !$header) {
-            throw new JWTFailedException();
+            $this->errMessage = "加密失败";
+            return false;
         }
-        $jwt = "{$header}.{$payLoad}.{$signature}";
-        return $jwt;
+        return "{$header}.{$payLoad}.{$signature}";
     }
 
     /**
@@ -118,14 +117,14 @@ class JWT
     {
         $JWT = explode(".", $encrypted);
         if (empty($JWT) || sizeof($JWT) != 3) {
-            throw new JWTStringErrorException();
+            $this->errMessage = "不是正确的JWT字符串";
+            return false;
         }
-        $header = $JWT[0];
-        $payLoad = $JWT[1];
-        $signature = $JWT[2];
-        $header = json_decode(base64_decode($header), true);
+        list($header, $payLoad, $signature) = $JWT;
+        $header    = json_decode(base64_decode($header), true);
         if (!is_array($header) || empty($header)) {
-            throw new JWTStringErrorException();
+            $this->errMessage = "JWT字符串格式错误";
+            return false;
         }
         $nowSignature = hash('sha256', $JWT[0] . "." . $JWT[1] . $hashSecret);
         if ($nowSignature != $signature) {
@@ -137,11 +136,11 @@ class JWT
         } else {
             $data = json_decode(base64_decode($payLoad), true);
         }
-        $this->decodedData = $data;
-        $this->decodedHeader = $header;
-        $this->decodedPlayLoad = $data;
+        $this->decodedData      = $data;
+        $this->decodedHeader    = $header;
+        $this->decodedPlayLoad  = $data;
         $this->decodedSignature = $signature;
-        $this->originSignature = $nowSignature;
+        $this->originSignature  = $nowSignature;
         return $data;
     }
 }
