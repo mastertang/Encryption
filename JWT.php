@@ -2,9 +2,17 @@
 
 namespace Encryption;
 
+/**
+ * Class JWT
+ * @package Encryption
+ */
 class JWT
 {
+    /**
+     * @var string 错误信息
+     */
     public $errMessage = '';
+
     /**
      * 解密后的数据
      */

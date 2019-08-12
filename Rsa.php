@@ -2,14 +2,33 @@
 
 namespace Encryption;
 
+/**
+ * Class Rsa
+ * @package Encryption
+ */
 class Rsa
 {
+    /**
+     * @var string 错误信息
+     */
     public $errMessage = '';
-    const KEY_PRIVATE = 0x01;
-    const KEY_PUBLIC  = 0x02;
 
     /**
-     * 加密
+     * 私钥类型
+     */
+    const KEY_PRIVATE = 0x01;
+
+    /**
+     * 公钥类型
+     */
+    const KEY_PUBLIC = 0x02;
+
+    /**
+     * Rsa加密
+     * @param $source
+     * @param $key
+     * @param int $type
+     * @return bool|string
      */
     public function encrypt($source, $key, $type = self::KEY_PRIVATE)
     {
@@ -48,7 +67,12 @@ class Rsa
     }
 
     /**
-     * 解密
+     * Rsa解密
+     *
+     * @param $encrypted
+     * @param $key
+     * @param int $type
+     * @return bool|string
      */
     public function decrypt($encrypted, $key, $type = self::KEY_PRIVATE)
     {
@@ -82,7 +106,9 @@ class Rsa
                 openssl_public_decrypt($spilt[$i], $decrypted[$i], $key);
             }
         }
-        if ($size == 1) $decrypted = $decrypted[0];
+        if ($size == 1) {
+            return $decrypted[0];
+        }
         return implode('', $decrypted);
     }
 }

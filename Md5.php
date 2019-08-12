@@ -1,6 +1,10 @@
 <?php
 namespace Encryption;
 
+/**
+ * Class Md5
+ * @package Encryption
+ */
 class Md5
 {
     /**

@@ -2,8 +2,15 @@
 
 namespace Encryption;
 
+/**
+ * Class Des
+ * @package Encryption
+ */
 class Des
 {
+    /**
+     * @var string 错误信息
+     */
     public $errMessage = '';
 
     /**
