@@ -111,4 +111,31 @@ class Rsa
         }
         return implode('', $decrypted);
     }
+
+    /**
+     * 创建rsa钥匙
+     *
+     * @param string $disgestAlg
+     * @param int $keyBits
+     * @param int $keyType
+     * @return array
+     */
+    public function createRsaKey($disgestAlg = 'sha512', $keyBits = 4096, $keyType = OPENSSL_KEYTYPE_RSA)
+    {
+        $config = [
+            'digest_alg'       => $disgestAlg,
+            'private_key_bits' => $keyBits,
+            'private_key_type' => $keyType
+        ];
+
+        $res = openssl_pkey_new($config);
+        openssl_pkey_export($res, $privKey);
+        $pubKey = openssl_pkey_get_details($res);
+        $pubKey = $pubKey["key"];
+
+        return [
+            'private' => $privKey,
+            'public'  => $pubKey
+        ];
+    }
 }
