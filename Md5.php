@@ -1,5 +1,5 @@
 <?php
-namespace Encryption;
+namespace EncryptionSDK;
 
 /**
  * Class Md5
@@ -17,7 +17,11 @@ class Md5
     const SALT_TAIL = 0x02;
 
     /**
-     * 加密
+     * @param $source
+     * @param string $salt
+     * @param int $position
+     * @param null $output
+     * @return string
      */
     public static function encrypt($source, $salt = "", $position = self::SALT_HEAD, $output = null)
     {
